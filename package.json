@@ -9,8 +9,8 @@
   "scripts": {
     "start": "electron .",
     "desktop": "electron .",
-    "dist": "electron-builder",
-    "dist:win": "electron-builder --win nsis portable"
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win nsis portable --publish never"
   },
   "devDependencies": {
     "electron": "^41.1.0",
