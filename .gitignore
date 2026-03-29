@@ -1,0 +1,13 @@
+node_modules/
+release/
+dist/
+.env
+.env.*
+!.env.example
+.evn
+.evn.*
+*.log
+*.tmp
+*.local
+*.tsbuildinfo
+package-lock.json.bak

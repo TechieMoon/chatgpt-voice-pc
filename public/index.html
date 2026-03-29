@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChatGPT Voice PC</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">ChatGPT Voice PC</p>
+        <h1>PC용 음성 화면공유 코파일럿을 누구나 설치해서 쓰게 만들기</h1>
+        <p class="hero-copy">
+          화면 공유가 켜져 있으면 로컬 VAD가 발화 종료를 감지한 순간 현재 화면을 캡처하고,
+          그 스크린샷을 먼저 보낸 뒤 오디오를 청크 단위로 커밋합니다. Electron 빌드에서는
+          API key를 첫 실행 때 입력받고, 원하면 이 PC에만 암호화 저장할 수 있습니다.
+        </p>
+        <div class="controls">
+          <button id="connectButton" class="primary">Connect</button>
+          <button id="disconnectButton" class="secondary" disabled>Disconnect</button>
+          <button id="shareButton" class="secondary" disabled>Start Screen Share</button>
+          <button id="apiKeyButton" class="secondary" hidden>API Key</button>
+        </div>
+      </header>
+
+      <section class="status-strip status-strip-wide">
+        <article class="status-card">
+          <span class="status-label">Connection</span>
+          <strong id="connectionValue">Disconnected</strong>
+        </article>
+        <article class="status-card">
+          <span class="status-label">Mic Turn</span>
+          <strong id="listeningValue">Idle</strong>
+        </article>
+        <article class="status-card">
+          <span class="status-label">Screen Share</span>
+          <strong id="screenValue">Off</strong>
+        </article>
+        <article class="status-card">
+          <span class="status-label">API Key</span>
+          <strong id="apiKeyValue">Web Mode</strong>
+        </article>
+      </section>
+
+      <section class="dashboard">
+        <article class="panel conversation-panel">
+          <div class="panel-head">
+            <h2>Transcript</h2>
+            <p>assistant transcript와 내가 보낸 turn 요약이 여기에 쌓입니다.</p>
+          </div>
+          <div id="conversationList" class="conversation-list"></div>
+        </article>
+
+        <article class="panel preview-panel">
+          <div class="panel-head">
+            <h2>Screen Preview</h2>
+            <p>화면 공유가 켜지면 이 미리보기에서 마지막 순간의 스크린샷을 잡습니다.</p>
+          </div>
+          <div class="preview-frame">
+            <video id="screenPreview" autoplay muted playsinline></video>
+            <div id="previewPlaceholder" class="preview-placeholder">
+              Screen sharing is off
+            </div>
+          </div>
+          <p class="panel-note">
+            주기적으로 보내지 않고, 발화가 끝난 turn에만 JPEG 스크린샷 1장을 먼저 보냅니다.
+          </p>
+        </article>
+      </section>
+
+      <section class="footer-grid">
+        <article class="panel meter-panel">
+          <div class="panel-head">
+            <h2>Mic Level</h2>
+            <p>로컬 VAD에 쓰이는 간단한 입력 레벨 표시입니다.</p>
+          </div>
+          <div class="meter-track">
+            <div id="meterFill" class="meter-fill"></div>
+          </div>
+        </article>
+
+        <article class="panel log-panel">
+          <div class="panel-head">
+            <h2>Event Log</h2>
+            <p>세션 상태와 turn 전송 흐름, Electron 저장 상태를 빠르게 확인할 수 있습니다.</p>
+          </div>
+          <div id="logList" class="log-list"></div>
+        </article>
+      </section>
+    </div>
+
+    <div id="apiKeyModal" class="modal-shell" hidden>
+      <div class="modal-card">
+        <p class="eyebrow">Local API Key Setup</p>
+        <h2>OpenAI API key를 입력하세요</h2>
+        <p class="modal-copy">
+          배포용 Electron 앱에서는 key를 렌더러에 노출하지 않고 main process에서만 사용합니다.
+          저장을 켜면 이 PC의 사용자 데이터 폴더에 OS 암호화로만 보관합니다.
+        </p>
+        <form id="apiKeyForm" class="modal-form">
+          <label class="field">
+            <span class="field-label">API Key</span>
+            <input
+              id="apiKeyInput"
+              class="text-input"
+              type="password"
+              placeholder="sk-..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="checkbox-row">
+            <input id="rememberKeyCheckbox" type="checkbox" checked />
+            <span>이 PC에만 암호화 저장</span>
+          </label>
+          <p id="apiKeyHelpText" class="inline-status">
+            저장하지 않으면 이번 실행 동안만 메모리에 유지됩니다.
+          </p>
+          <div class="modal-actions">
+            <button type="submit" class="primary">Save Key</button>
+            <button type="button" id="sessionOnlyButton" class="secondary">
+              Session Only
+            </button>
+            <button type="button" id="clearKeyButton" class="secondary">
+              Clear Stored Key
+            </button>
+            <button type="button" id="closeApiKeyModalButton" class="secondary">
+              Close
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="captureSourceModal" class="modal-shell" hidden>
+      <div class="modal-card modal-card-wide">
+        <p class="eyebrow">Screen Picker</p>
+        <h2>공유할 화면이나 창을 선택하세요</h2>
+        <p class="modal-copy">
+          Electron 빌드에서는 이 목록에서 화면을 고르면 바로 미리보기가 연결됩니다.
+        </p>
+        <div id="captureSourceList" class="source-grid"></div>
+        <div class="modal-actions">
+          <button type="button" id="closeCaptureSourceModalButton" class="secondary">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
