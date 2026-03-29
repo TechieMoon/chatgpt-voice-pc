@@ -21,7 +21,7 @@ PC에서 음성으로 대화하고, 필요할 때 현재 보고 있는 화면을
 
 ## 가장 쉬운 설치 방법
 
-1. GitHub Releases 페이지에서 최신 파일을 받습니다.
+1. [GitHub Releases 페이지](https://github.com/TechieMoon/chatgpt-voice-pc/releases)에서 최신 파일을 받습니다.
 2. 아래 둘 중 하나를 실행합니다.
    - `ChatGPT Voice PC-Setup-...exe` : 설치형
    - `ChatGPT Voice PC-Portable-...exe` : 바로 실행형
