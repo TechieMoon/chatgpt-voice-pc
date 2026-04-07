@@ -38,7 +38,7 @@ PC에서 음성으로 대화하고, 필요할 때 현재 보고 있는 화면을
 
 ### 2. OpenAI API key 만들기
 
-1. OpenAI Platform 사이트에 로그인합니다.
+1. [OpenAI Platform 사이트](https://platform.openai.com/home)에 로그인합니다.
 2. API Keys 페이지로 들어갑니다.
 3. `Create new secret key` 버튼을 누릅니다.
 4. 새 key를 만든 뒤 바로 복사해 둡니다.
