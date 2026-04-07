@@ -128,19 +128,3 @@ Windows 배포 파일을 직접 만들고 싶다면:
 ```bash
 npm run dist:win
 ```
-
-## 이미지 넣는 방법
-
-README 중간의 이미지들은 아래 경로를 바라보도록 미리 연결되어 있습니다.
-
-```text
-docs/readme-images/image1.png
-docs/readme-images/image2.png
-docs/readme-images/image3.png
-docs/readme-images/image4.png
-docs/readme-images/image5.png
-docs/readme-images/image6.png
-docs/readme-images/image7.png
-```
-
-나중에 이 파일 이름으로 이미지를 넣으면 README에 자동으로 보입니다.
